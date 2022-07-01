@@ -1,22 +1,21 @@
-FROM maven:latest
-#set maven dependency to specific version?
+FROM node:11.9.0
 
-WORKDIR /code
+RUN mkdir -p /home/node/app/node_modules && chown -R node:node /home/node/app
 
-COPY . /code
+WORKDIR /home/node/app
 
-ARG DB_HOST
-ARG DB_PASSWORD
-ARG DB_USERNAME
-ARG DB_NAME
+COPY package*.json ./
 
-ENV DB_HOST ${DB_HOST}
-ENV DB_PASSWORD ${DB_PASSWORD}
-ENV DB_USERNAME ${DB_USERNAME}
-ENV DB_NAME ${DB_NAME}
+USER node
 
-RUN mvn clean install -DskipTests=true
+ARG API_URL
 
-EXPOSE 8080
+ENV API_URL ${API_URL}
 
-CMD ["java","-jar", "/code/target/JavaWebService-1.0-SNAPSHOT.jar", "server", "/code/config.yml"]
+RUN npm install
+
+COPY --chown=node:node . .
+
+EXPOSE 3000
+
+CMD [ "node", "start.js" ]
